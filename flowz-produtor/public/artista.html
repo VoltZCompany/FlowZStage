@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>FlowZ — Artista</title>
+<link rel="manifest" href="/manifest-artista.json">
+<link rel="apple-touch-icon" href="/icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Artista">
+<meta name="theme-color" content="#0A0A14">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" as="script">
+<script>try{if(localStorage.getItem('artista_dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#FF9F0A;--gold-light:rgba(255,159,10,.14);--gold-border:rgba(255,159,10,.32);
+  --ink:#0A0A14;--ink2:#3A3A52;--ink3:#72728A;
+  --surface:#FFFFFF;--bg:#F4F2FA;--border:#E2DEED;
+  --green:#30D158;--green-bg:rgba(48,209,88,.12);--green-border:rgba(48,209,88,.3);
+  --purple:#BF5AF2;--purple-bg:rgba(191,90,242,.12);--purple-border:rgba(191,90,242,.3);
+  --red:#FF3B30;
+  --topbar-bg:rgba(255,255,255,.96);
+  --transition:1.6s ease;
+}
+html.dark{
+  --ink:#F2F2F7;--ink2:#C7C7CC;--ink3:#8E8E93;
+  --surface:#1C1C1E;--bg:#000000;--border:#38383A;
+  --gold-light:rgba(255,159,10,.18);--gold-border:rgba(255,159,10,.4);
+  --green-bg:rgba(48,209,88,.12);
+  --purple-bg:rgba(191,90,242,.14);
+  --topbar-bg:rgba(10,10,20,.96);
+}
+html,body{background:var(--bg);min-height:100vh;transition:background var(--transition)}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;color:var(--ink);font-size:14.5px;line-height:1.6;padding-top:64px;padding-bottom:40px;transition:color var(--transition)}
+.hero-name,.hc-val,.sec-title,.tb-title,.pin-title,.timing-time,.van-plate{font-family:'Sora',sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 32px}
+
+/* ─── Topbar ─── */
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:var(--topbar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;z-index:200;transition:background var(--transition),border-color var(--transition)}
+.tb-title{flex:1;text-align:center;font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px;transition:color var(--transition)}
+.tb-dark-toggle{width:44px;height:28px;background:var(--border);border:none;border-radius:99px;cursor:pointer;position:relative;transition:background var(--transition);flex-shrink:0;padding:0}
+.tb-dark-toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform var(--transition),background var(--transition)}
+html.dark .tb-dark-toggle{background:var(--gold)}
+html.dark .tb-dark-toggle::after{transform:translateX(16px)}
+
+/* ─── Scroll top ─── */
+.scroll-top{position:fixed;bottom:24px;right:16px;width:40px;height:40px;border-radius:50%;background:var(--gold);border:none;color:#fff;font-size:18px;font-weight:900;cursor:pointer;z-index:9000;opacity:0;transition:opacity .25s;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,159,10,.4);transform:translateZ(0);-webkit-transform:translateZ(0)}
+.scroll-top.visible{opacity:1}
+.scroll-top:active{opacity:.7}
+
+/* ─── Fade-in ─── */
+.fade-in{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+/* ─── PIN overlay ─── */
+@keyframes blobA{0%,100%{transform:translate(0,0) scale(1)}40%{transform:translate(30px,-20px) scale(1.15)}70%{transform:translate(-15px,25px) scale(.9)}}
+@keyframes blobB{0%,100%{transform:translate(0,0) scale(1)}35%{transform:translate(-25px,30px) scale(1.1)}65%{transform:translate(20px,-15px) scale(.92)}}
+@keyframes blobC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-22px) scale(1.08)}}
+@keyframes blobD{0%,100%{transform:translate(0,0)}30%{transform:translate(-20px,15px)}70%{transform:translate(10px,-10px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+#pin-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;transition:opacity .35s ease,transform .35s ease;overflow:hidden}
+#pin-overlay.hide{opacity:0;transform:scale(1.04);pointer-events:none}
+.pin-orbis{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.pin-orbit{position:absolute;border-radius:50%;filter:blur(72px);opacity:.18}
+.pin-orbit:nth-child(1){width:320px;height:320px;top:-80px;left:50%;margin-left:-160px;background:radial-gradient(circle,var(--gold) 0%,transparent 70%);animation:blobA 10s ease-in-out infinite}
+.pin-orbit:nth-child(2){width:260px;height:260px;bottom:60px;left:-60px;background:radial-gradient(circle,#BF5AF2 0%,transparent 70%);animation:blobB 12s ease-in-out infinite}
+.pin-orbit:nth-child(3){width:220px;height:220px;bottom:80px;right:-50px;background:radial-gradient(circle,#FF6B35 0%,transparent 70%);animation:blobC 8s ease-in-out infinite}
+.pin-orbit:nth-child(4){width:180px;height:180px;top:30%;right:-20px;background:radial-gradient(circle,#FF9F0A 0%,transparent 70%);animation:blobD 14s ease-in-out infinite}
+html.dark .pin-orbit{opacity:.38}
+.pin-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%}
+.pin-title{font-size:24px;font-weight:900;letter-spacing:-.6px;color:var(--ink);margin-bottom:6px;text-align:center}
+.pin-sub{font-size:14px;color:var(--ink3);margin-bottom:36px;text-align:center}
+.pin-dots{display:flex;gap:14px;margin-bottom:28px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:background .15s,border-color .15s}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold)}
+.pin-dot.err{background:var(--red);border-color:var(--red)}
+.pin-dots.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;width:100%;margin-bottom:16px}
+.pin-key{height:64px;border-radius:16px;border:1.5px solid var(--border);background:var(--surface);font-size:22px;font-weight:600;color:var(--ink);cursor:pointer;font-family:'Sora',sans-serif;transition:transform .08s cubic-bezier(.34,1.56,.64,1),background .12s;-webkit-tap-highlight-color:transparent;user-select:none;position:relative;overflow:hidden}
+.pin-key:active{transform:scale(.88);background:var(--gold-light)}
+.pin-key.del{font-size:18px}
+.pin-key.enter{background:var(--gold);color:#fff;border-color:var(--gold);font-size:20px}
+.pin-key.enter:active{transform:scale(.9)}
+.pin-err{font-size:13px;color:var(--red);font-weight:600;min-height:20px;text-align:center;margin-top:4px}
+
+/* ─── Hero ─── */
+@keyframes heroSlide{0%{background-position:0% 50%}40%{background-position:80% 30%}70%{background-position:100% 70%}100%{background-position:0% 50%}}
+.hero{background:linear-gradient(135deg,#16082A 0%,#0A1035 18%,#0D2060 36%,#16082A 50%,#1A0838 64%,#0A1428 80%,#0A0A20 100%);background-size:300% 300%;animation:heroSlide 12s ease-in-out infinite;color:#fff;border-radius:22px;padding:28px 24px 24px;margin-bottom:14px;position:relative;overflow:hidden}
+@keyframes artOrb1{0%{transform:translate(0,0) scale(1)}35%{transform:translate(22px,-18px) scale(1.14)}70%{transform:translate(-12px,20px) scale(.88)}100%{transform:translate(0,0) scale(1)}}
+@keyframes artOrb2{0%{transform:translate(0,0) scale(1)}40%{transform:translate(-28px,16px) scale(1.2)}80%{transform:translate(16px,-22px) scale(.9)}100%{transform:translate(0,0) scale(1)}}
+@keyframes artOrb3{0%{transform:translate(0,0) scale(.9)}50%{transform:translate(18px,22px) scale(1.12)}100%{transform:translate(0,0) scale(.9)}}
+@keyframes artOrb4{0%{transform:translate(0,0)}45%{transform:translate(-16px,-18px) scale(1.08)}100%{transform:translate(0,0)}}
+.hero-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(60px)}
+.hero-orb1{width:240px;height:240px;background:rgba(255,159,10,.18);top:-70px;right:5%;animation:artOrb1 9s ease-in-out infinite}
+.hero-orb2{width:200px;height:200px;background:rgba(191,90,242,.2);bottom:-60px;left:-10%;animation:artOrb2 12s ease-in-out infinite 1.6s}
+.hero-orb3{width:220px;height:220px;background:rgba(255,100,150,.12);top:20%;left:-40px;animation:artOrb3 10s ease-in-out infinite 0.9s}
+.hero-orb4{width:160px;height:160px;background:rgba(255,159,10,.15);bottom:-20px;right:-5%;animation:artOrb4 14s ease-in-out infinite 3.1s}
+.hero-inner{position:relative;z-index:2}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,159,10,.2);border:1px solid rgba(255,159,10,.45);font-size:10px;font-weight:900;letter-spacing:2px;padding:5px 12px;border-radius:99px;margin-bottom:16px;text-transform:uppercase;color:var(--gold)}
+.hero-name{font-size:30px;font-weight:900;letter-spacing:-.8px;line-height:1.08;text-align:center;margin-bottom:5px}
+.hero-city{font-size:13px;opacity:.75;text-align:center;font-weight:500;margin-bottom:4px}
+
+/* ─── Cards ─── */
+.sec{background:var(--surface);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.07),0 1px 8px rgba(0,0,0,.04);transition:background var(--transition),border-color var(--transition)}
+.sec-title{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);margin-bottom:14px;display:flex;align-items:center;gap:6px;transition:color var(--transition)}
+.row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:13.5px}
+.row:last-child{margin-bottom:0}
+.lbl{color:var(--ink3);min-width:110px;flex-shrink:0;font-size:12px;font-weight:500}
+.val{font-weight:700;color:var(--ink);flex:1;min-width:0}
+
+/* ─── Timing card ─── */
+.timing-card{background:linear-gradient(135deg,#16082A 0%,#0A0A20 100%);border-radius:18px;padding:20px 20px 18px;margin-bottom:12px;color:#fff;position:relative;overflow:hidden}
+.timing-card::before{content:'';position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,159,10,.18) 0%,transparent 70%);pointer-events:none}
+.timing-block{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.timing-block:last-child{border-bottom:none;padding-bottom:0}
+.timing-block:first-child{padding-top:0}
+.timing-label{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;opacity:.55;margin-bottom:4px}
+.timing-sub{font-size:12px;opacity:.5;margin-top:3px;font-weight:500}
+.timing-time{font-size:60px;font-weight:900;letter-spacing:-3px;line-height:1;color:var(--gold);font-family:'Sora',sans-serif}
+.timing-time.show{color:#FFFFFF}
+.timing-travel{display:inline-flex;align-items:center;gap:6px;background:rgba(255,159,10,.15);border:1px solid rgba(255,159,10,.3);border-radius:99px;font-size:12px;font-weight:700;color:var(--gold);padding:4px 12px;margin-top:10px}
+.timing-no-data{font-size:28px;font-weight:900;letter-spacing:-1px;opacity:.25}
+
+/* ─── Badges ─── */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;padding:5px 12px;border-radius:99px;letter-spacing:.2px}
+.badge.gold{background:var(--gold-light);color:var(--gold);border:1.5px solid var(--gold-border)}
+.badge.green{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green-border)}
+.badge.purple{background:var(--purple-bg);color:var(--purple);border:1.5px solid var(--purple-border)}
+.badge.gray{background:var(--border);color:var(--ink3);border:1.5px solid var(--border)}
+.badge.red{background:rgba(255,59,48,.12);color:var(--red);border:1.5px solid rgba(255,59,48,.3)}
+
+/* ─── Stage setup ─── */
+.stage-badge{display:flex;align-items:center;gap:14px;background:var(--gold-light);border:1.5px solid var(--gold-border);border-radius:14px;padding:14px 16px}
+.stage-icon{font-size:32px;flex-shrink:0}
+.stage-name{font-family:'Sora',sans-serif;font-size:20px;font-weight:900;letter-spacing:-.5px;color:var(--gold)}
+.stage-desc{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:500}
+
+/* ─── Outfit ─── */
+.outfit-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.outfit-pill{padding:7px 16px;border-radius:99px;font-size:13px;font-weight:800;border:1.5px solid var(--border);background:var(--bg);color:var(--ink3);cursor:default}
+.outfit-pill.selected{background:var(--gold-light);border-color:var(--gold-border);color:var(--gold)}
+.outfit-notes{font-size:14px;color:var(--ink);font-weight:500;line-height:1.55;padding:12px 14px;background:var(--bg);border-radius:10px;border:1px solid var(--border);margin-top:4px}
+
+/* ─── Agradecimentos ─── */
+.agradec-text{font-size:15px;color:var(--ink);font-weight:500;line-height:1.7;white-space:pre-wrap;padding:14px 16px;background:var(--gold-light);border:1.5px solid var(--gold-border);border-radius:14px;border-left:4px solid var(--gold)}
+
+/* ─── Mala e Cuia ─── */
+@keyframes mcIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes mcPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+@keyframes mcSwift{0%{left:-80%}60%,100%{left:130%}}
+.mala-cuia-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;flex-direction:row;align-items:center;gap:12px;animation:mcIn .5s cubic-bezier(.34,1.56,.64,1) both;position:relative;overflow:hidden}
+html:not(.dark) .mala-cuia-card{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}
+.mala-cuia-card::before{content:'';position:absolute;top:0;bottom:0;left:-80%;width:45%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transform:skewX(-18deg);animation:mcSwift 3.5s ease-in-out infinite;pointer-events:none}
+html:not(.dark) .mala-cuia-card::before{background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+.mc-icon{font-size:30px;line-height:1;animation:mcPulse 2.4s ease-in-out infinite;flex-shrink:0}
+.mc-body{flex:1;min-width:0}
+.mc-title{font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--ink1);margin-bottom:2px;font-family:'Sora',sans-serif}
+.mc-sub{font-size:11px;color:var(--ink3);font-weight:500}
+
+/* ─── Home arrival ─── */
+.home-card{display:flex;align-items:center;gap:16px;padding:16px 18px;background:var(--green-bg);border:1.5px solid var(--green-border);border-radius:16px;margin-bottom:12px}
+.home-icon{font-size:32px;flex-shrink:0}
+.home-lbl{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--green);margin-bottom:4px}
+.home-time{font-family:'Sora',sans-serif;font-size:36px;font-weight:900;letter-spacing:-1.5px;color:var(--green);line-height:1}
+.home-sub{font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}
+
+/* ─── Weather ─── */
+.weather-card{background:rgba(255,159,10,.07);border:1.5px solid rgba(255,159,10,.2);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:14px;margin-bottom:12px;transition:opacity .4s}
+html.dark .weather-card{background:rgba(255,159,10,.1);border-color:rgba(255,159,10,.25)}
+.w-icon{font-size:32px;flex-shrink:0}
+.w-info{flex:1;min-width:0}
+.w-label{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2}
+.w-meta{font-size:12px;color:var(--ink3);font-weight:500;margin-top:2px}
+.w-temp{font-family:'Sora',sans-serif;font-size:26px;font-weight:900;color:var(--gold);white-space:nowrap;letter-spacing:-.5px}
+.w-min{font-size:13px;font-weight:600;color:var(--ink3);display:block;text-align:right;letter-spacing:0}
+
+/* ─── Contratante ─── */
+.contratante-name{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.3px}
+
+/* ─── Local ─── */
+.waze-btn-sm{display:inline-flex;align-items:center;gap:5px;background:#33CCCC;color:#fff;text-decoration:none;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:99px;margin-left:auto;flex-shrink:0}
+.waze-btn-sm img{width:16px;height:16px;border-radius:3px}
+
+/* ─── Flight — boarding pass ─── */
+@keyframes planeFly{0%,100%{transform:translate(-50%,-60%) translateX(-4px)}50%{transform:translate(-50%,-60%) translateX(4px)}}
+.flight-card{background:#0D1526;border:1px solid rgba(255,255,255,.08);border-radius:22px;overflow:hidden;margin-bottom:12px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+html:not(.dark) .flight-card{background:#EEF3FF;border-color:rgba(10,30,100,.1);box-shadow:0 4px 24px rgba(10,30,100,.09)}
+.fc-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 13px;border-bottom:1px solid rgba(255,255,255,.07)}
+html:not(.dark) .fc-head{border-bottom-color:rgba(0,0,0,.07)}
+.fc-label{font-size:9px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+html:not(.dark) .fc-label{color:rgba(0,0,0,.3)}
+.fc-fnum{display:inline-flex;align-items:center;background:rgba(255,159,10,.14);border:1px solid rgba(255,159,10,.3);border-radius:99px;padding:4px 13px;font-size:12px;font-weight:800;color:#FF9F0A;letter-spacing:.8px;font-family:'Courier New',monospace}
+.fc-route{padding:22px 20px 20px}
+.fc-strip{display:flex;align-items:flex-start;gap:0}
+.fc-airport{flex:1;min-width:0}
+.fc-airport.right{text-align:right}
+.fc-iata{font-family:'Courier New',monospace;font-size:42px;font-weight:900;letter-spacing:-2px;line-height:1;color:#fff}
+html:not(.dark) .fc-iata{color:#0A0A1E}
+.fc-city{font-size:11px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.2px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:not(.dark) .fc-city{color:rgba(0,0,0,.38)}
+.fc-date-row{font-size:10px;color:rgba(255,255,255,.3);font-weight:600;letter-spacing:.5px;margin-bottom:4px;text-transform:uppercase}
+html:not(.dark) .fc-date-row{color:rgba(0,0,0,.3)}
+.fc-time{font-family:'Courier New',monospace;font-size:26px;font-weight:900;letter-spacing:-1px;color:#FF9F0A;margin-top:12px;line-height:1}
+.fc-time.arr{color:rgba(255,255,255,.88)}
+html:not(.dark) .fc-time.arr{color:#0A0A1E}
+.fc-mid{flex:0 0 52px;display:flex;flex-direction:column;align-items:center;padding-top:14px}
+.fc-track{width:100%;height:1.5px;background:linear-gradient(90deg,rgba(255,159,10,.7) 0%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.28) 100%);position:relative;margin-bottom:6px}
+html:not(.dark) .fc-track{background:linear-gradient(90deg,rgba(255,159,10,.6),rgba(10,30,100,.1),rgba(10,30,100,.18))}
+.fc-plane{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:13px;animation:planeFly 2.6s ease-in-out infinite}
+.fc-direct{font-size:8px;font-weight:900;color:rgba(255,255,255,.2);letter-spacing:1px;text-transform:uppercase;text-align:center}
+html:not(.dark) .fc-direct{color:rgba(0,0,0,.18)}
+/* Tear notch — boarding pass perforation */
+.fc-tear{position:relative;height:0;border-top:1.5px dashed rgba(255,255,255,.1);margin:0}
+html:not(.dark) .fc-tear{border-top-color:rgba(0,0,0,.08)}
+.fc-tear::before,.fc-tear::after{content:'';position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:#0D1526;transform:translateY(-50%)}
+html:not(.dark) .fc-tear::before,html:not(.dark) .fc-tear::after{background:#EEF3FF}
+.fc-tear::before{left:-11px}.fc-tear::after{right:-11px}
+/* Leg airline + layover */
+.fc-leg-top{display:flex;justify-content:center;padding:12px 20px 0}
+.fc-leg-badge{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.8px;font-family:'Courier New',monospace}
+html:not(.dark) .fc-leg-badge{color:rgba(0,0,0,.3)}
+.fc-layover{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;background:rgba(191,90,242,.12);font-size:10px;font-weight:900;color:#BF5AF2;letter-spacing:1.4px;text-transform:uppercase}
+
+/* ─── Misc ─── */
+#loading{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 0;color:var(--ink3);font-size:14px}
+#error-box{background:rgba(255,59,48,.08);border:1.5px solid rgba(255,59,48,.25);border-radius:14px;padding:20px;color:var(--red);font-weight:600;text-align:center;margin-top:40px}
+.camarim-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.duration-val{font-family:'Sora',sans-serif;font-size:28px;font-weight:900;color:var(--gold);letter-spacing:-1px}
+.soundcheck-time{font-family:'Sora',sans-serif;font-size:22px;font-weight:900;color:var(--purple);letter-spacing:-.8px}
+#update-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#FF9F0A;padding:14px 18px 32px;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
+#update-banner .ub-text{color:#fff;font-size:14px;font-weight:800;letter-spacing:-.3px}
+#update-banner .ub-sub{color:rgba(255,255,255,.8);font-size:12px;margin-top:2px}
+#update-banner .ub-btn{background:#fff;color:#FF9F0A;border:none;border-radius:99px;padding:8px 18px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- PIN overlay -->
+<div id="pin-overlay">
+  <div class="pin-orbis">
+    <div class="pin-orbit"></div>
+    <div class="pin-orbit"></div>
+    <div class="pin-orbit"></div>
+    <div class="pin-orbit"></div>
+  </div>
+  <div class="pin-inner">
+    <div class="pin-title">🎤 FlowZ Artista</div>
+    <div class="pin-sub">Digite o PIN para acessar</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key enter" onclick="pinSubmit()">→</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div style="width:44px;flex-shrink:0"></div>
+  <div class="tb-title" id="page-title">FlowZ Artista</div>
+  <button class="tb-dark-toggle" id="dark-toggle" onclick="toggleDark()" aria-label="Alternar modo escuro"></button>
+</div>
+
+<div class="wrap" id="root">
+  <div id="loading">
+    <div style="font-size:36px">🎤</div>
+    <div>Carregando briefing…</div>
+  </div>
+</div>
+
+<button class="scroll-top" id="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+function toggleDark(){var d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('artista_dark',d?'1':'0');}catch(e){}}
+(function(){try{if(localStorage.getItem('artista_dark')==='1')document.documentElement.classList.add('dark');}catch(e){}})();
+
+(function(){
+  var btn=document.getElementById('scroll-top-btn');
+  window.addEventListener('scroll',function(){
+    btn.classList.toggle('visible',window.scrollY>200);
+  },{passive:true});
+})();
+
+var SUPABASE_URL='https://rziiztwvwdggyekstamr.supabase.co';
+var SUPABASE_ANON='sb_publishable_LBwflM-nWvJ_RSIoldG_Gg_112ZWeAL';
+
+// ─── PIN ──────────────────────────────────────────────────────
+var PIN_SK='flowz_equipe_pin';
+var _pinBuffer='';
+var _correctPin='1234';
+
+(function initPin(){
+  try{if(sessionStorage.getItem(PIN_SK)==='1'){unlockContent();return;}}catch(e){}
+  fetch(SUPABASE_URL+'/rest/v1/app_config?key=eq.team_pin&select=value&limit=1',{
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
+  }).then(function(r){return r.json();}).then(function(rows){
+    if(rows&&rows[0]&&rows[0].value)_correctPin=rows[0].value;
+  }).catch(function(){});
+})();
+
+function pinPress(d){if(_pinBuffer.length>=4)return;_pinBuffer+=d;renderPinDots(false);if(_pinBuffer.length===4)setTimeout(pinSubmit,80);}
+function pinDel(){if(!_pinBuffer.length)return;_pinBuffer=_pinBuffer.slice(0,-1);renderPinDots(false);}
+function renderPinDots(err){for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);d.className='pin-dot'+(i<_pinBuffer.length?(err?' err':' filled'):'');}}
+function pinSubmit(){
+  if(_pinBuffer.length<4)return;
+  if(_pinBuffer===_correctPin){try{sessionStorage.setItem(PIN_SK,'1');}catch(e){}unlockContent();}
+  else{
+    renderPinDots(true);var dots=document.getElementById('pin-dots');
+    dots.classList.add('shake');dots.addEventListener('animationend',function(){dots.classList.remove('shake');},{once:true});
+    document.getElementById('pin-err').textContent='PIN incorreto';
+    setTimeout(function(){_pinBuffer='';renderPinDots(false);document.getElementById('pin-err').textContent='';},900);
+  }
+}
+function unlockContent(){var ov=document.getElementById('pin-overlay');ov.classList.add('hide');setTimeout(function(){ov.style.display='none';},380);}
+document.addEventListener('keydown',function(e){
+  var ov=document.getElementById('pin-overlay');
+  if(!ov||ov.style.display==='none')return;
+  if(e.key>='0'&&e.key<='9')pinPress(e.key);
+  else if(e.key==='Backspace')pinDel();
+  else if(e.key==='Enter')pinSubmit();
+});
+// ─────────────────────────────────────────────────────────────
+
+var DAYS_FULL=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+var DAYS_SHORT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+var MONTHS_SHORT=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function shortDay(d){if(!d)return '—';try{var dt=new Date(d+'T12:00:00');return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+' · '+DAYS_SHORT[dt.getDay()];}catch(e){return esc(d);}}
+
+function dateLabel(d){
+  if(!d)return '';
+  try{
+    var dt=new Date(d+'T12:00:00');
+    return dt.getDate()+' DE '+MONTHS_SHORT[dt.getMonth()];
+  }catch(e){return '';}
+}
+
+function calcTravelTime(fromHHMM,toHHMM){
+  if(!fromHHMM||!toHHMM)return null;
+  var fp=fromHHMM.split(':'),tp=toHHMM.split(':');
+  var mins=(parseInt(tp[0])*60+parseInt(tp[1]))-(parseInt(fp[0])*60+parseInt(fp[1]));
+  if(mins<0)mins+=24*60;
+  if(mins<=0||mins>480)return null;
+  if(mins>=60)return Math.floor(mins/60)+'h'+(mins%60?String(mins%60).padStart(2,'0')+'min':'');
+  return mins+'min';
+}
+
+function fmtDuration(mins){
+  if(!mins||mins<=0)return null;
+  if(mins>=60)return Math.floor(mins/60)+'h'+(mins%60?String(mins%60).padStart(2,'0')+'min':'');
+  return mins+'min';
+}
+
+// ─── Airports ────────────────────────────────────────────────
+var AIRPORTS={
+  GRU:{city:'São Paulo',name:'Guarulhos'},CGH:{city:'São Paulo',name:'Congonhas'},
+  GIG:{city:'Rio de Janeiro',name:'Galeão'},SDU:{city:'Rio de Janeiro',name:'Santos Dumont'},
+  BSB:{city:'Brasília',name:'Int. de Brasília'},CNF:{city:'Belo Horizonte',name:'Confins'},
+  SSA:{city:'Salvador',name:'Dep. Luís Eduardo'},REC:{city:'Recife',name:'Guararapes'},
+  FOR:{city:'Fortaleza',name:'Pinto Martins'},MAO:{city:'Manaus',name:'Eduardo Gomes'},
+  BEL:{city:'Belém',name:'Val de Cans'},CWB:{city:'Curitiba',name:'Afonso Pena'},
+  POA:{city:'Porto Alegre',name:'Salgado Filho'},FLN:{city:'Florianópolis',name:'Hercílio Luz'},
+  VCP:{city:'Campinas',name:'Viracopos'},CGB:{city:'Cuiabá',name:'Marechal Rondon'},
+  CGR:{city:'Campo Grande',name:'Int. de Campo Grande'},PVH:{city:'Porto Velho',name:'Gov. Jorge Teixeira'},
+  MCZ:{city:'Maceió',name:'Zumbi dos Palmares'},NAT:{city:'Natal',name:'São Gonçalo do Amarante'},
+  THE:{city:'Teresina',name:'Sen. Petrônio Portella'},SLZ:{city:'São Luís',name:'Int. do Maranhão'},
+  JPA:{city:'João Pessoa',name:'Presidente Castro Pinto'},AJU:{city:'Aracaju',name:'Santa Maria'},
+  VDC:{city:'Vitória da Conquista'},IOS:{city:'Ilhéus'},BPS:{city:'Porto Seguro'},
+  STM:{city:'Santarém'},IMP:{city:'Imperatriz'},MCP:{city:'Macapá'},
+  PMW:{city:'Palmas'},GYN:{city:'Goiânia'},UDI:{city:'Uberlândia'},
+  VIX:{city:'Vitória'},PMO:{city:'Pelotas'},IGU:{city:'Foz do Iguaçu'},
+  XAP:{city:'Chapecó'},JOI:{city:'Joinville'},BNU:{city:'Blumenau'},
+  LDB:{city:'Londrina'},MGA:{city:'Maringá'},AQA:{city:'Araraquara'},
+  CPQ:{city:'Campinas'},JTC:{city:'Bauru'}
+};
+function airportCity(iata){if(!iata)return '';var a=AIRPORTS[iata.toUpperCase()];return a?a.city:iata;}
+function airportLabel(iata){if(!iata)return '';var a=AIRPORTS[iata.toUpperCase()];return a?iata+' — '+a.city:iata;}
+
+// ─── Flight section — boarding pass ─────────────────────────
+function routeStrip(origin, dest, depTime, arrTime, depDate, city, direct) {
+  return '<div class="fc-strip">'
+    + '<div class="fc-airport">'
+    + (depDate ? '<div class="fc-date-row">' + shortDay(depDate) + '</div>' : '')
+    + '<div class="fc-iata">' + esc(origin || '???') + '</div>'
+    + '<div class="fc-city">' + city(origin) + '</div>'
+    + '<div class="fc-time">' + (depTime ? esc(depTime) : '--:--') + '</div>'
+    + '</div>'
+    + '<div class="fc-mid">'
+    + '<div class="fc-track"><span class="fc-plane">✈</span></div>'
+    + (direct ? '<div class="fc-direct">direto</div>' : '')
+    + '</div>'
+    + '<div class="fc-airport right">'
+    + (depDate ? '<div class="fc-date-row" style="visibility:hidden">·</div>' : '')
+    + '<div class="fc-iata">' + esc(dest || '???') + '</div>'
+    + '<div class="fc-city">' + city(dest) + '</div>'
+    + '<div class="fc-time arr">' + (arrTime ? esc(arrTime) : '--:--') + '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function buildFlightSection(s, label) {
+  if (!s.hasAirplane) return '';
+  var city = function(iata) { return esc(airportCity(iata) || iata || ''); };
+  var head = '<div class="flight-card fade-in">'
+    + '<div class="fc-head">'
+    + '<div class="fc-label">✈ ' + esc(label) + '</div>'
+    + (s.flightNumber ? '<div class="fc-fnum">VOO ' + esc(s.flightNumber) + '</div>' : '')
+    + '</div>';
+  if (!s.hasEscala) {
+    return head
+      + '<div class="fc-route">'
+      + routeStrip(s.airportName, s.airportDestination, s.flightTime, s.flightArrivalTime, s.flightDate, city, true)
+      + '</div></div>';
+  }
+  var legs = s.flightLegs || [];
+  if (!legs.length) return '';
+  var legsHtml = legs.map(function(leg, i) {
+    var sep = i > 0 ? '<div class="fc-tear"></div>' : '';
+    var badge = (leg.airline || leg.flightNumber)
+      ? '<div class="fc-leg-top"><div class="fc-leg-badge">' + esc([leg.airline, leg.flightNumber].filter(Boolean).join(' · ')) + '</div></div>'
+      : '';
+    var layover = i < legs.length - 1
+      ? '<div class="fc-layover">⏳ Conexão em ' + city(leg.destination) + '</div>'
+      : '';
+    return sep + badge
+      + '<div class="fc-route">'
+      + routeStrip(leg.origin, leg.destination, leg.time, leg.arrivalTime, leg.date, city, false)
+      + '</div>' + layover;
+  }).join('');
+  return head + legsHtml + '</div>';
+}
+
+// ─── Weather (Open-Meteo + geocoding) ────────────────────────
+var WMO_ICON={0:'☀️',1:'☀️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',80:'🌦️',81:'🌧️',82:'🌧️',95:'⛈️',96:'⛈️',99:'⛈️'};
+var WMO_LABEL={0:'Céu aberto',1:'Céu aberto',2:'Parcialmente nublado',3:'Encoberto',45:'Neblina',51:'Garoa leve',53:'Garoa',55:'Garoa forte',61:'Chuva fraca',63:'Chuva moderada',65:'Chuva forte',80:'Pancada fraca',81:'Pancada moderada',82:'Pancada forte',95:'Tempestade',96:'Tempestade c/ granizo',99:'Tempestade forte'};
+
+async function fetchWeather(city, date) {
+  try {
+    var cityClean = city.split(',')[0].split(' - ')[0].split(' / ')[0].trim();
+    var geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(cityClean)+'&count=5&language=pt&format=json&countryCode=BR');
+    if (!geoRes.ok) return null;
+    var geoData = await geoRes.json();
+    if (!geoData.results || !geoData.results.length) return null;
+    var loc = geoData.results.find(function(r){return r.country_code==='BR';})||geoData.results[0];
+
+    var today = new Date(); today.setHours(0,0,0,0);
+    var showDate = new Date(date + 'T00:00:00');
+    var diffDays = Math.round((showDate - today) / 86400000);
+    if (diffDays > 16) return null;
+
+    var apiBase = diffDays < 0
+      ? 'https://archive-api.open-meteo.com/v1/archive'
+      : 'https://api.open-meteo.com/v1/forecast';
+    var dailyFields = diffDays < 0
+      ? 'weather_code,temperature_2m_max,temperature_2m_min'
+      : 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max';
+
+    var fRes = await fetch(apiBase+'?latitude='+loc.latitude+'&longitude='+loc.longitude+'&daily='+dailyFields+'&start_date='+date+'&end_date='+date+'&timezone=America%2FSao_Paulo');
+    if (!fRes.ok) return null;
+    var fData = await fRes.json();
+    if (!fData.daily || !fData.daily.time || !fData.daily.time.length) return null;
+
+    var code = fData.daily.weather_code ? fData.daily.weather_code[0] : 0;
+    var rain = diffDays < 0 ? 0 : ((fData.daily.precipitation_probability_max && fData.daily.precipitation_probability_max[0]) || 0);
+    return {
+      icon: WMO_ICON[code] !== undefined ? WMO_ICON[code] : '🌡️',
+      label: WMO_LABEL[code] || 'Clima',
+      max: Math.round(fData.daily.temperature_2m_max[0]),
+      min: Math.round(fData.daily.temperature_2m_min[0]),
+      rain: rain,
+      city: cityClean,
+      approx: diffDays < 0,
+    };
+  } catch(e) { return null; }
+}
+
+function renderWeather(w) {
+  var card = document.getElementById('weather-card');
+  if (!card) return;
+  if (!w) { card.style.display = 'none'; return; }
+  document.getElementById('w-icon').textContent = w.icon;
+  document.getElementById('w-label').textContent = w.label + (w.approx ? ' (estimado)' : '');
+  var rainStr = (!w.approx && w.rain >= 10) ? ' · ' + w.rain + '% de chuva' : '';
+  document.getElementById('w-meta').textContent = w.city + rainStr;
+  document.getElementById('w-temp').innerHTML = w.max + '°<span class="w-min">mín ' + w.min + '°</span>';
+  card.style.display = 'flex';
+  card.classList.add('visible');
+}
+// ─────────────────────────────────────────────────────────────
+
+function initIntersectionObserver(){
+  if(!('IntersectionObserver' in window)){
+    document.querySelectorAll('.fade-in').forEach(function(el){el.classList.add('visible');});return;
+  }
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var el=entry.target,delay=parseFloat(el.dataset.delay||0);
+        setTimeout(function(){el.classList.add('visible');},delay);
+        obs.unobserve(el);
+      }
+    });
+  },{threshold:0.08});
+  document.querySelectorAll('.fade-in').forEach(function(el,i){el.dataset.delay=Math.min(i*70,350);obs.observe(el);});
+}
+
+function stageInfo(setup){
+  var map={
+    'dropdown':{icon:'🎪',name:'Cenário Dropdown',desc:'Cenário desce do teto — preparar posicionamento'},
+    '360':{icon:'🔄',name:'Palco 360°',desc:'Público em volta — sem costas para a plateia'},
+    'led':{icon:'💡',name:'Painel de LED',desc:'Fundo com painel de LED — atenção à posição'},
+    'none':{icon:'✨',name:'Sem cenário especial',desc:'Palco limpo, sem estrutura adicional'}
+  };
+  return map[setup]||null;
+}
+
+var OUTFIT_PRESETS=['Social','Casual','Esportivo','Fantasia','Executivo','Show'];
+
+function renderShow(show){
+  var wazeVenue=show.venueAddress
+    ?'https://waze.com/ul?q='+encodeURIComponent(show.venueAddress)+'&navigate=yes'
+    :(show.venue?'https://waze.com/ul?q='+encodeURIComponent(show.venue+(show.city?', '+show.city:''))+'&navigate=yes':'');
+
+  var dayOfWeek='';
+  if(show.date){try{var dt=new Date(show.date+'T12:00:00');dayOfWeek=DAYS_FULL[dt.getDay()];}catch(e){}}
+
+  document.getElementById('page-title').textContent=show.name||'Artista';
+
+  var meetingTime=show.departureTimeMeetingShow||show.departureTimeHotelShow||'';
+  var travelTime=calcTravelTime(meetingTime,show.time);
+  var durStr=fmtDuration(show.showDurationMinutes);
+  var dl = dateLabel(show.date);
+  var badgeText = dl ? '🎤 ' + dl.toUpperCase() + (dayOfWeek ? ' · ' + dayOfWeek.toUpperCase() : '') : '🎤 SEU SHOW';
+
+  var html='';
+
+  // ── Hero ─────────────────────────────────────────────────────
+  html+='<div class="hero fade-in">'
+    +'<div class="hero-orb hero-orb1"></div>'
+    +'<div class="hero-orb hero-orb2"></div>'
+    +'<div class="hero-orb hero-orb3"></div>'
+    +'<div class="hero-orb hero-orb4"></div>'
+    +'<div class="hero-inner">'
+    +'<div style="text-align:center;margin-bottom:16px"><span class="hero-badge">'+badgeText+'</span></div>'
+    +'<div class="hero-name">'+esc(show.name)+'</div>'
+    +(function(){var v=(show.venue&&show.venue.trim()!==show.name.trim())?show.venue:null;return(show.city||v)?'<div class="hero-city">'+(v?esc(v):'')+(v&&show.city?' · ':'')+esc(show.city||'')+'</div>':'';})()
+    +'</div>'
+    +'</div>';
+
+  // ── Timing ───────────────────────────────────────────────────
+  html+='<div class="timing-card fade-in">';
+  if(meetingTime || !show.hasHotel){
+    html+='<div class="timing-block">'
+      +'<div><div class="timing-label">📍 Ponto de Encontro</div>'
+      +(show.distanceMeetingShow?'<div class="timing-sub">'+esc(show.distanceMeetingShow)+' até o show</div>':show.hasVan&&show.vanDriverName?'<div class="timing-sub">Van: '+esc(show.vanDriverName)+'</div>':'')
+      +''
+      +'</div>'
+      +(meetingTime?'<div class="timing-time">'+esc(meetingTime)+'</div>':'<div class="timing-no-data">A definir</div>')
+      +'</div>';
+  }
+  html+='<div class="timing-block">'
+    +'<div><div class="timing-label">🎤 Hora do Show</div></div>'
+    +(show.time?'<div class="timing-time show">'+esc(show.time)+'</div>':'<div class="timing-no-data">--:--</div>')
+    +'</div>';
+  html+='</div>';
+
+  // ── Weather ──────────────────────────────────────────────────
+  html+='<div class="weather-card fade-in" id="weather-card" style="display:none">'
+    +'<span id="w-icon" class="w-icon"></span>'
+    +'<div class="w-info"><div id="w-label" class="w-label"></div><div id="w-meta" class="w-meta"></div></div>'
+    +'<div id="w-temp" class="w-temp"></div>'
+    +'</div>';
+
+  // ── Mala e Cuia ──────────────────────────────────────────────
+  if (show.hotelMalaCuia) {
+    html += '<div class="mala-cuia-card fade-in"><span class="mc-icon">🧳</span><div class="mc-body"><div class="mc-title">Mala e Cuia</div><div class="mc-sub">Não esqueça de levar a mala para o show</div></div></div>';
+  }
+
+  // ── Show info ────────────────────────────────────────────────
+  var hasShowInfo=show.hasCamarim!==undefined||durStr||show.soundcheckTime;
+  if(hasShowInfo){
+    html+='<div class="sec fade-in"><div class="sec-title">🎬 Show</div>';
+    if(show.hasCamarim!==undefined){
+      html+='<div class="camarim-row" style="margin-bottom:12px">'
+        +(show.hasCamarim
+          ?'<span class="badge green">✅ Tem camarim</span>'
+          :'<span class="badge red">❌ Sem camarim</span>')
+        +'</div>';
+    }
+    if(durStr){html+='<div class="row"><span class="lbl">Duração</span><span class="duration-val">'+esc(durStr)+'</span></div>';}
+    if(show.soundcheckTime){html+='<div class="row"><span class="lbl">Soundcheck</span><span class="soundcheck-time">'+esc(show.soundcheckTime)+'</span></div>';}
+    html+='</div>';
+  }
+
+  // ── Stage setup ──────────────────────────────────────────────
+  if(show.stageSetup){
+    var si=stageInfo(show.stageSetup);
+    if(si){
+      html+='<div class="sec fade-in"><div class="sec-title">🎭 Palco</div>'
+        +'<div class="stage-badge"><span class="stage-icon">'+si.icon+'</span><div><div class="stage-name">'+si.name+'</div><div class="stage-desc">'+si.desc+'</div></div></div>'
+        +'</div>';
+    }
+  }
+
+  // ── Figurino ─────────────────────────────────────────────────
+  if(show.outfit){
+    var isPreset=OUTFIT_PRESETS.indexOf(show.outfit)!==-1;
+    html+='<div class="sec fade-in"><div class="sec-title">👗 Figurino</div>';
+    if(isPreset){
+      html+='<div class="outfit-presets">';
+      OUTFIT_PRESETS.forEach(function(p){html+='<span class="outfit-pill'+(p===show.outfit?' selected':'')+'">'+esc(p)+'</span>';});
+      html+='</div>';
+    } else {
+      html+='<div class="outfit-notes">'+esc(show.outfit)+'</div>';
+    }
+    html+='</div>';
+  }
+
+  // ── Agradecimentos ───────────────────────────────────────────
+  if(show.agradecimentos){
+    html+='<div class="sec fade-in"><div class="sec-title">🙏 Agradecimentos</div>'
+      +'<div class="agradec-text">'+esc(show.agradecimentos)+'</div>'
+      +'</div>';
+  }
+
+  // ── Voo de Ida ───────────────────────────────────────────────
+  html += buildFlightSection(show, 'Voo de Ida');
+
+  // ── Chegada em casa ──────────────────────────────────────────
+  if(show.homeArrivalTime){
+    var dateDisplay = show.date ? show.date.split('-').reverse().join('/') : '';
+    html+='<div class="home-card fade-in">'
+      +'<span class="home-icon">🏠</span>'
+      +'<div><div class="home-lbl">Previsão de chegada em casa</div>'
+      +'<div class="home-time">'+esc(show.homeArrivalTime)+'</div>'
+      +(dayOfWeek?'<div class="home-sub">'+esc(dayOfWeek)+(dateDisplay?', '+dateDisplay:'')+'</div>':'')
+      +'</div></div>';
+  }
+
+  // ── Contratante (nome apenas) ────────────────────────────────
+  if(show.contratante){
+    html+='<div class="sec fade-in"><div class="sec-title">🤝 Contratante</div>'
+      +'<div class="contratante-name">'+esc(show.contratante)+'</div>'
+      +'</div>';
+  }
+
+  // ── Local ────────────────────────────────────────────────────
+  html+='<div class="sec fade-in"><div class="sec-title">📍 Local'
+    +(wazeVenue?'<a href="'+wazeVenue+'" target="_blank" class="waze-btn-sm"><img src="https://www.waze.com/apple-touch-icon.png" alt="Waze">Waze</a>':'')
+    +'</div>'
+    +(show.venue?'<div class="row"><span class="lbl">Local</span><span class="val">'+esc(show.venue)+'</span></div>':'')
+    +(show.venueAddress?'<div class="row"><span class="lbl">Endereço</span><span class="val">'+esc(show.venueAddress)+'</span></div>':'')
+    +(show.city?'<div class="row"><span class="lbl">Cidade</span><span class="val">'+esc(show.city)+'</span></div>':'')
+    +'</div>';
+
+  document.getElementById('root').innerHTML=html;
+  initIntersectionObserver();
+
+  if(show.city&&show.date){
+    fetchWeather(show.city,show.date).then(renderWeather);
+  }
+}
+
+async function fetchShow(id){
+  var url=SUPABASE_URL+'/rest/v1/shows?id=eq.'+encodeURIComponent(id)+'&select=*&limit=1';
+  var res=await fetch(url,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  var rows=await res.json();
+  if(!rows.length)throw new Error('Show não encontrado');
+  var data=rows[0].data;
+  if(!data||typeof data!=='object')throw new Error('Dados do show incompletos');
+  return data;
+}
+
+async function main(){
+  var params=new URLSearchParams(location.search);
+  var id=params.get('id');
+  if(!id){window.location.replace('proximos.html');return;}
+  try{
+    var show=await fetchShow(id);
+    renderShow(show);
+  }catch(err){
+    document.getElementById('root').innerHTML='<div id="error-box">❌ Erro ao carregar: '+esc(err.message)+'</div>';
+  }
+}
+
+main();
+
+var _baseVid=null,_updateScheduled=false;
+function doUpdate(){
+  var p=Promise.resolve();
+  if('caches' in window)p=caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));});
+  p.then(function(){if('serviceWorker' in navigator)return navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));});}).then(function(){location.reload();}).catch(function(){location.reload();});
+}
+function checkVersion(){
+  fetch('/version.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    var bid=d&&typeof d.buildId==='string'?d.buildId:null;
+    if(!bid||bid==='__BUILD_ID__')return;
+    if(_baseVid===null){_baseVid=bid;return;}
+    if(bid!==_baseVid&&!_updateScheduled){
+      _updateScheduled=true;
+      document.getElementById('update-banner').style.display='flex';
+      setTimeout(doUpdate,5000);
+    }
+  }).catch(function(){});
+}
+checkVersion();
+setInterval(checkVersion,30*1000);
+window.addEventListener('focus',checkVersion);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')checkVersion();});
+
+if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='RELOAD')location.reload();});}
+</script>
+
+<div id="update-banner">
+  <div><div class="ub-text">🔄 Nova versão disponível</div><div class="ub-sub">Atualizando automaticamente...</div></div>
+  <button class="ub-btn" onclick="doUpdate()">Agora</button>
+</div>
+</body>
+</html>

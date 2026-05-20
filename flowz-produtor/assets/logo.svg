@@ -1,0 +1,27 @@
+<svg width="1024" height="1024" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f5f7fa"/>
+      <stop offset="100%" stop-color="#e6e9f0"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4facfe"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a18cd1"/>
+      <stop offset="100%" stop-color="#fbc2eb"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#43e97b"/>
+      <stop offset="100%" stop-color="#38f9d7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bgGradient)"/>
+  <g transform="translate(0,-10)">
+    <path d="M140 170 Q260 80 380 160 Q300 190 200 200 Z" fill="url(#blueGrad)"/>
+    <path d="M160 260 Q270 180 370 250 Q300 280 210 300 Z" fill="url(#purpleGrad)"/>
+    <path d="M140 340 Q240 300 320 340 Q260 400 180 400 Z" fill="url(#greenGrad)"/>
+    <circle cx="360" cy="360" r="18" fill="url(#purpleGrad)"/>
+  </g>
+</svg>

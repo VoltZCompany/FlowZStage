@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Próximos Shows</title>
+<link rel="manifest" href="/manifest-equipe.json">
+<link rel="apple-touch-icon" href="/icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Roteiro">
+<meta name="theme-color" content="#0A1628" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0F2F8" media="(prefers-color-scheme: light)">
+<script>try{if(localStorage.getItem('equipe_dark')==='1')document.documentElement.classList.add('dark')}catch(e){}</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@font-face{font-family:'ClashDisplay';src:url('/fonts/ClashDisplay-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:'ClashDisplay';src:url('/fonts/ClashDisplay-Semibold.ttf') format('truetype');font-weight:600;font-display:swap}
+@font-face{font-family:'CabinetGrotesk';src:url('/fonts/CabinetGrotesk-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'CabinetGrotesk';src:url('/fonts/CabinetGrotesk-Medium.ttf') format('truetype');font-weight:500;font-display:swap}
+@font-face{font-family:'CabinetGrotesk';src:url('/fonts/CabinetGrotesk-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face{font-family:'SpaceGrotesk';src:url('/fonts/SpaceGrotesk-SemiBold.ttf') format('truetype');font-weight:600;font-display:swap}
+@font-face{font-family:'SpaceGrotesk';src:url('/fonts/SpaceGrotesk-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+:root{
+  --blue:#0A84FF;--blue-light:#E5F0FF;
+  --ink:#0A0F1A;--ink2:#3C3C50;--ink3:#6E6E82;
+  --surface:#FFFFFF;--bg:#F0F2F8;--border:#E4E6EF;
+  --green:#30D158;--orange:#FF9F0A;--purple:#BF5AF2;
+  --topbar-bg:rgba(255,255,255,.92);
+  --card-shadow:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.05);
+  --trans:0.35s ease;
+}
+html.dark{
+  --ink:#F2F2F7;--ink2:#C7C7CC;--ink3:#8E8E93;
+  --surface:#1C1C1E;--bg:#000;--border:#38383A;
+  --blue-light:rgba(10,132,255,.18);
+  --topbar-bg:rgba(28,28,30,.92);
+  --card-shadow:0 2px 12px rgba(0,0,0,.4),0 1px 4px rgba(0,0,0,.3);
+}
+html,body{background:var(--bg);min-height:100vh;color:var(--ink);font-family:'CabinetGrotesk',-apple-system,BlinkMacSystemFont,sans-serif;transition:background var(--trans),color var(--trans)}
+body{padding-top:64px;padding-bottom:48px}
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:var(--topbar-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;z-index:200;transition:background var(--trans),border-color var(--trans)}
+.tb-title{flex:1;text-align:center;font-size:15px;font-family:'CabinetGrotesk';font-weight:700;color:var(--ink);letter-spacing:-.3px;transition:color var(--trans)}
+.tb-dark-toggle{width:44px;height:28px;background:var(--border);border:none;border-radius:99px;cursor:pointer;position:relative;transition:background var(--trans);flex-shrink:0;padding:0}
+.tb-dark-toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform var(--trans)}
+html.dark .tb-dark-toggle{background:var(--blue)}
+html.dark .tb-dark-toggle::after{transform:translateX(16px)}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 32px}
+
+/* Section header */
+.section-hdr{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--ink3);margin:0 4px 10px;transition:color var(--trans)}
+
+/* Show card */
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(22px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.show-card{
+  display:block;text-decoration:none;color:inherit;
+  background:var(--surface);border-radius:18px;padding:0;
+  margin-bottom:10px;
+  box-shadow:var(--card-shadow);
+  border:1.5px solid var(--border);
+  overflow:hidden;
+  opacity:0;
+  animation:slideUp .5s cubic-bezier(.34,1.26,.64,1) forwards;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.show-card:active{transform:scale(.975)}
+@media(hover:hover){
+  .show-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.13),0 2px 8px rgba(0,0,0,.07)}
+}
+.show-card-inner{display:flex;align-items:stretch;gap:0}
+
+/* Date column */
+.show-date-col{
+  width:72px;flex-shrink:0;
+  background:linear-gradient(160deg,#0A1628 0%,#0D2E5C 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px 8px;gap:1px;
+  position:relative;overflow:hidden;
+}
+.show-date-col::after{content:'';position:absolute;top:-20px;left:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(10,132,255,.3) 0%,transparent 70%);pointer-events:none}
+.show-day-num{font-size:28px;font-family:'SpaceGrotesk';font-weight:700;color:#fff;line-height:1;letter-spacing:-1px;position:relative;z-index:1}
+.show-month{font-size:10px;font-family:'CabinetGrotesk';font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.6);text-transform:uppercase;position:relative;z-index:1;margin-top:2px}
+.show-weekday{font-size:11px;font-family:'CabinetGrotesk';font-weight:500;color:rgba(255,255,255,.45);position:relative;z-index:1;margin-top:3px}
+
+/* Card body */
+.show-body{flex:1;min-width:0;padding:14px 12px 14px 16px}
+.show-name{font-size:16px;font-family:'ClashDisplay';font-weight:700;color:var(--ink);letter-spacing:-.2px;line-height:1.2;margin-bottom:5px;transition:color var(--trans)}
+.show-meta{font-size:12px;font-family:'CabinetGrotesk';font-weight:400;color:var(--ink3);margin-bottom:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color var(--trans)}
+.show-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.show-time{font-size:17px;font-family:'SpaceGrotesk';font-weight:700;color:var(--blue);letter-spacing:-.5px;text-shadow:0 0 12px rgba(10,132,255,.5),0 0 24px rgba(10,132,255,.25)}
+html.dark .show-time{color:#5AB4FF;text-shadow:0 0 12px rgba(90,180,255,.75),0 0 28px rgba(90,180,255,.35)}
+.show-countdown{font-size:11px;font-family:'CabinetGrotesk';font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:.3px;white-space:nowrap}
+.show-countdown.today{background:rgba(48,209,88,.18);color:var(--green)}
+.show-countdown.soon{background:rgba(255,159,10,.18);color:var(--orange)}
+.show-countdown.future{background:var(--blue-light);color:var(--blue)}
+/* Meeting point time */
+@keyframes meetingPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(10,132,255,.5);opacity:1}
+  50%{box-shadow:0 0 0 5px rgba(10,132,255,0);opacity:.82}
+}
+@keyframes meetingGlow{
+  0%,100%{text-shadow:0 0 6px rgba(10,132,255,.6)}
+  50%{text-shadow:0 0 18px rgba(10,132,255,1),0 0 32px rgba(10,132,255,.5)}
+}
+.meeting-time{display:inline-flex;align-items:center;gap:5px;background:rgba(10,132,255,.14);border:1.5px solid rgba(10,132,255,.4);border-radius:99px;padding:3px 11px;font-size:13px;font-weight:900;color:var(--blue);letter-spacing:-.3px;white-space:nowrap;animation:meetingPulse 2s ease-out infinite}
+.meeting-time .mt-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;animation:meetingGlow 2s ease-in-out infinite}
+html.dark .meeting-time{background:rgba(10,132,255,.25);border-color:rgba(10,132,255,.7);color:#fff}
+html.dark .meeting-time .mt-dot{background:#fff}
+
+/* Arrow */
+.show-arrow{font-size:22px;font-weight:300;color:var(--ink3);padding:0 14px 0 4px;display:flex;align-items:center;flex-shrink:0;transition:color var(--trans)}
+
+/* Empty / loading state */
+#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;gap:14px;color:var(--ink3);font-size:15px;font-weight:600;text-align:center}
+.loading-icon{font-size:40px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.12);opacity:1}}
+#error-box{background:#FFF1F0;border:1.5px solid #FFCCC7;border-radius:16px;padding:24px;text-align:center;color:#CF1322;font-weight:700}
+.empty{text-align:center;padding:48px 24px;color:var(--ink3);font-size:15px;font-weight:600}
+.empty-icon{font-size:40px;margin-bottom:14px}
+
+/* Past section divider */
+.past-divider{display:flex;align-items:center;gap:12px;margin:24px 4px 14px}
+.past-line{flex:1;height:1px;background:var(--border)}
+.past-label{font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+
+/* Past shows dimmed */
+@keyframes slideUpPast{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:.45;transform:translateY(0) scale(1)}}
+.show-card.past{animation:slideUpPast .5s cubic-bezier(.34,1.26,.64,1) forwards}
+.show-card.past .show-date-col{opacity:.6}
+.show-card.past .show-countdown{background:var(--border);color:var(--ink3)}
+
+/* ─── PIN overlay ─── */
+#pin-overlay{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;transition:opacity .45s ease,transform .35s ease;overflow:hidden;opacity:0;pointer-events:none}
+#pin-overlay.hide{opacity:0;transform:scale(1.04);pointer-events:none}
+/* Orbis */
+@keyframes blobA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-24px) scale(1.08)}}
+@keyframes blobB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-22px,20px) scale(1.12)}}
+@keyframes blobC{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(16px,28px) scale(.92)}}
+@keyframes blobD{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-14px,-18px) scale(1.06)}}
+.pin-orbis{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.pin-orbit{position:absolute;border-radius:50%;filter:blur(72px);opacity:.22}
+.pin-orbit:nth-child(1){width:320px;height:320px;top:-80px;left:50%;margin-left:-160px;background:radial-gradient(circle,#0A84FF 0%,transparent 70%);animation:blobA 9s ease-in-out infinite}
+.pin-orbit:nth-child(2){width:260px;height:260px;bottom:60px;left:-60px;background:radial-gradient(circle,#BF5AF2 0%,transparent 70%);animation:blobB 11s ease-in-out infinite}
+.pin-orbit:nth-child(3){width:220px;height:220px;bottom:80px;right:-50px;background:radial-gradient(circle,#00C7BE 0%,transparent 70%);animation:blobC 8s ease-in-out infinite}
+.pin-orbit:nth-child(4){width:180px;height:180px;top:30%;right:-20px;background:radial-gradient(circle,#5E5CE6 0%,transparent 70%);animation:blobD 13s ease-in-out infinite}
+html.dark .pin-orbit{opacity:.45}
+.pin-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%}
+.pin-title{font-size:24px;font-weight:900;letter-spacing:-.6px;color:var(--ink);margin-bottom:6px;text-align:center}
+.pin-sub{font-size:14px;color:var(--ink3);margin-bottom:36px;text-align:center}
+.pin-dots{display:flex;gap:14px;margin-bottom:28px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:background .15s,border-color .15s}
+.pin-dot.filled{background:var(--blue);border-color:var(--blue)}
+.pin-dot.err{background:#FF3B30;border-color:#FF3B30}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;width:100%;margin-bottom:24px}
+.pin-key{height:64px;border-radius:16px;border:1.5px solid var(--border);background:var(--surface);font-size:22px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit;transition:transform .08s cubic-bezier(.34,1.56,.64,1),background .12s;-webkit-tap-highlight-color:transparent;user-select:none}
+.pin-key:active{transform:scale(.9);background:var(--blue-light)}
+.pin-key.del{font-size:18px}
+.pin-key.enter{background:var(--blue);color:#fff;border-color:var(--blue);font-size:20px}
+.pin-key.enter:active{transform:scale(.9)}
+.pin-err{font-size:13px;font-weight:700;color:#FF3B30;height:18px;text-align:center;margin-top:4px}
+@keyframes pin-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.pin-dots.shake{animation:pin-shake .35s ease}
+#update-banner{display:none;position:fixed;bottom:22px;left:16px;right:16px;z-index:99999;background:rgba(18,18,24,0.96);border-radius:20px;padding:13px 14px 13px 16px;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 14px 48px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+html:not(.dark) #update-banner{background:rgba(255,255,255,0.96);border-color:rgba(0,0,0,.06);box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.ub-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.ub-icon{width:38px;height:38px;border-radius:12px;background:rgba(10,132,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ub-text{color:#F2F2F7;font-size:14px;font-weight:700;letter-spacing:-.3px}
+html:not(.dark) .ub-text{color:#0A0F1A}
+.ub-sub{color:rgba(242,242,247,.45);font-size:12px;margin-top:2px}
+html:not(.dark) .ub-sub{color:rgba(10,15,26,.45)}
+.ub-btn{background:#0A84FF;color:#fff;border:none;border-radius:12px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;letter-spacing:-.2px}
+/* VerifiedBadge starburst */
+@keyframes vbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.vb-core{position:relative;width:22px;height:22px;display:inline-block;animation:vbPulse 1.8s ease-in-out infinite;vertical-align:middle}
+.vb-sq{position:absolute;top:50%;left:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:4px;background:#007AFF}
+.vb-sq.r0{transform:rotate(0deg)}.vb-sq.r22{transform:rotate(22.5deg)}.vb-sq.r45{transform:rotate(45deg)}.vb-sq.r67{transform:rotate(67.5deg)}
+.vb-ck{position:absolute;top:50%;left:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;fill:none}
+/* SVG icon helpers */
+.svg-icon{display:inline-flex;align-items:center;justify-content:center}
+.loading-svg{animation:pulse 1.4s ease-in-out infinite;color:var(--ink3)}
+.empty-svg{color:var(--ink3);opacity:.6}
+
+/* ── Splash ── */
+@keyframes splashLogoIn{
+  from{opacity:0;transform:scale(.82) translateY(16px)}
+  to  {opacity:1;transform:scale(1)   translateY(0)}
+}
+@keyframes splashTextIn{
+  from{opacity:0;transform:translateY(12px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+@keyframes splashFadeOut{
+  from{opacity:1}
+  to  {opacity:0}
+}
+@keyframes splashOrb1{0%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.15)}66%{transform:translate(-20px,24px) scale(.88)}100%{transform:translate(0,0) scale(1)}}
+@keyframes splashOrb2{0%{transform:translate(0,0) scale(1)}40%{transform:translate(-50px,20px) scale(1.2)}75%{transform:translate(28px,-36px) scale(.85)}100%{transform:translate(0,0) scale(1)}}
+@keyframes splashOrb3{0%{transform:translate(0,0) scale(.9)}50%{transform:translate(30px,28px) scale(1.18)}100%{transform:translate(0,0) scale(.9)}}
+@keyframes splashOrb4{0%{transform:translate(0,0)}45%{transform:translate(-22px,-22px) scale(1.1)}100%{transform:translate(0,0)}}
+#splash{
+  position:fixed;inset:0;z-index:99999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  background:#060C18;
+  pointer-events:none;
+  overflow:hidden;
+}
+html:not(.dark) #splash{background:#0D1526;}
+.splash-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(60px);opacity:.55}
+.splash-orb1{width:260px;height:260px;background:radial-gradient(circle,#0A84FF 0%,transparent 70%);top:-60px;left:10%;animation:splashOrb1 9s ease-in-out infinite}
+.splash-orb2{width:200px;height:200px;background:radial-gradient(circle,#5E5CE6 0%,transparent 70%);bottom:-40px;right:8%;animation:splashOrb2 12s ease-in-out infinite 1.5s}
+.splash-orb3{width:180px;height:180px;background:radial-gradient(circle,#00C7BE 0%,transparent 70%);top:35%;left:-30px;animation:splashOrb3 10s ease-in-out infinite .8s}
+.splash-orb4{width:140px;height:140px;background:radial-gradient(circle,#BF5AF2 0%,transparent 70%);bottom:15%;left:50%;animation:splashOrb4 14s ease-in-out infinite 2.8s}
+#splash img{width:300px;max-width:80vw;user-select:none;-webkit-user-drag:none;display:none;position:relative;z-index:2}
+#splash img.active{display:block;animation:splashLogoIn .8s cubic-bezier(.34,1.26,.64,1) both}
+#splash-tagline{
+  opacity:0;
+  font-family:'CabinetGrotesk-Bold','CabinetGrotesk',sans-serif;
+  font-size:15px;font-weight:700;letter-spacing:2px;
+  color:rgba(255,255,255,.55);text-transform:uppercase;
+  animation:splashTextIn .7s cubic-bezier(.34,1.26,.64,1) .5s both;
+  position:relative;z-index:2;
+}
+#splash.fade-out{animation:splashFadeOut 1.8s cubic-bezier(.4,0,.2,1) forwards}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-orb splash-orb1"></div>
+  <div class="splash-orb splash-orb2"></div>
+  <div class="splash-orb splash-orb3"></div>
+  <div class="splash-orb splash-orb4"></div>
+  <img id="splash-light" src="/logo-matheusinho.png" alt="matheusinho" draggable="false" />
+  <img id="splash-dark"  src="/logo-matheusinho-dark.png" alt="matheusinho" draggable="false" />
+  <div id="splash-tagline">FlowZ &bull; Equipe</div>
+</div>
+<script>
+// PIN overlay começa oculto — só aparece após o splash terminar
+(function(){
+  var pin=document.getElementById('pin-overlay');
+  if(pin){pin.style.opacity='0';pin.style.pointerEvents='none';}
+})();
+(function(){
+  var isDark=document.documentElement.classList.contains('dark');
+  document.getElementById(isDark?'splash-dark':'splash-light').classList.add('active');
+  var SPLASH_HOLD=2600;   // ms exibindo a logo
+  var SPLASH_FADE=1800;   // ms da animação de saída
+  var _splashDone=false;
+  function revealPin(){
+    if(_splashDone)return;
+    _splashDone=true;
+    var pin=document.getElementById('pin-overlay');
+    if(!pin)return;
+    // Se já foi desbloqueado via sessionStorage (unlockContent chamado), não reexibe
+    if(pin.classList.contains('hide')||pin.style.display==='none')return;
+    pin.style.transition='opacity .45s ease';
+    pin.style.opacity='1';
+    pin.style.pointerEvents='auto';
+  }
+  function hideSplash(){
+    var s=document.getElementById('splash');
+    if(!s)return;
+    s.classList.add('fade-out');
+    setTimeout(function(){
+      if(s.parentNode)s.parentNode.removeChild(s);
+      revealPin();
+    },SPLASH_FADE);
+  }
+  function start(){setTimeout(hideSplash,SPLASH_HOLD);}
+  if(document.readyState==='complete'){start();}
+  else{window.addEventListener('load',start);}
+})();
+</script>
+
+<div id="pin-overlay">
+  <div class="pin-orbis" aria-hidden="true">
+    <div class="pin-orbit"></div>
+    <div class="pin-orbit"></div>
+    <div class="pin-orbit"></div>
+    <div class="pin-orbit"></div>
+  </div>
+  <div class="pin-inner">
+    <div class="pin-title">Próximos Shows</div>
+    <div class="pin-sub">Digite o PIN para acessar</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key enter" onclick="pinSubmit()">→</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div style="width:44px"></div>
+  <div class="tb-title">Próximos Shows</div>
+  <button class="tb-dark-toggle" id="dark-toggle" onclick="toggleDark()" aria-label="Modo escuro"></button>
+</div>
+
+<div class="wrap">
+  <div id="loading">
+    <div class="loading-svg"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:pulse 1.4s ease-in-out infinite"><rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="21" x2="15" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div>Carregando shows…</div>
+  </div>
+  <div id="root" style="display:none"></div>
+</div>
+
+<script>
+function toggleDark(){var d=document.documentElement.classList.toggle('dark');try{localStorage.setItem('equipe_dark',d?'1':'0')}catch(e){}}
+(function(){try{if(localStorage.getItem('equipe_dark')==='1')document.documentElement.classList.add('dark')}catch(e){}})();
+
+var SUPABASE_URL='https://rziiztwvwdggyekstamr.supabase.co';
+var SUPABASE_ANON='sb_publishable_LBwflM-nWvJ_RSIoldG_Gg_112ZWeAL';
+
+// ─── PIN auth (sessionStorage — zera ao fechar o browser) ──────
+var PIN_SK='flowz_equipe_pin';
+var _pinUnlocked=false;
+var _pendingHtml=null;
+var _pinBuffer='';
+var _correctPin='1234';
+(function initPin(){
+  try{ if(sessionStorage.getItem(PIN_SK)==='1'){unlockContent();return;} }catch(e){}
+  fetch(SUPABASE_URL+'/rest/v1/app_config?key=eq.team_pin&select=value&limit=1',{
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
+  }).then(function(r){return r.json();}).then(function(rows){
+    if(rows&&rows[0]&&rows[0].value)_correctPin=rows[0].value;
+  }).catch(function(){});
+})();
+function pinPress(d){if(_pinBuffer.length>=4)return;_pinBuffer+=d;renderPinDots(false);if(_pinBuffer.length===4)setTimeout(pinSubmit,80);}
+function pinDel(){if(!_pinBuffer.length)return;_pinBuffer=_pinBuffer.slice(0,-1);renderPinDots(false);}
+function renderPinDots(err){for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);d.className='pin-dot'+(i<_pinBuffer.length?(err?' err':' filled'):'');}}
+function pinSubmit(){
+  if(_pinBuffer.length<4)return;
+  if(_pinBuffer===_correctPin){
+    try{sessionStorage.setItem(PIN_SK,'1');}catch(e){}
+    unlockContent();
+  }else{
+    renderPinDots(true);
+    var dots=document.getElementById('pin-dots');
+    dots.classList.add('shake');
+    dots.addEventListener('animationend',function(){dots.classList.remove('shake');},{once:true});
+    document.getElementById('pin-err').textContent='PIN incorreto';
+    setTimeout(function(){_pinBuffer='';renderPinDots(false);document.getElementById('pin-err').textContent='';},900);
+  }
+}
+function unlockContent(){
+  _pinUnlocked=true;
+  var o=document.getElementById('pin-overlay');
+  if(!o)return;
+  o.classList.add('hide');
+  o.style.pointerEvents='none';
+  setTimeout(function(){o.style.display='none';},400);
+  // Revela os shows se os dados já chegaram enquanto aguardava o PIN
+  if(_pendingHtml!==null){
+    var root=document.getElementById('root');
+    root.innerHTML=_pendingHtml;
+    root.style.display='block';
+    document.getElementById('loading').style.display='none';
+    _pendingHtml=null;
+  }
+}
+document.addEventListener('keydown',function(e){
+  var o=document.getElementById('pin-overlay');
+  if(!o||o.style.display==='none')return;
+  if(e.key>='0'&&e.key<='9')pinPress(e.key);
+  else if(e.key==='Backspace')pinDel();
+  else if(e.key==='Enter')pinSubmit();
+});
+// ──────────────────────────────────────────────────────────────
+
+var MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+var MONTHS_FULL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var DAYS_SHORT=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function parseLocalDate(d){
+  if(!d)return null;
+  var p=d.split('-');
+  return new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]),12,0,0);
+}
+
+function countdownText(showDate){
+  var now=new Date();
+  var todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var showStr=showDate.getFullYear()+'-'+String(showDate.getMonth()+1).padStart(2,'0')+'-'+String(showDate.getDate()).padStart(2,'0');
+  if(showStr===todayStr)return{text:'Hoje',cls:'today'};
+  var diff=Math.round((showDate-new Date(todayStr+'T12:00:00'))/86400000);
+  if(diff===1)return{text:'Amanhã',cls:'soon'};
+  if(diff<0)return{text:'Concluído',cls:''};
+  if(diff<=7)return{text:'Em '+diff+' dias',cls:'soon'};
+  return{text:'Em '+diff+' dias',cls:'future'};
+}
+
+function buildCard(show,idx,past){
+  var d=parseLocalDate(show.date);
+  if(!d)return'';
+  var dayNum=d.getDate();
+  var month=MONTHS[d.getMonth()].toUpperCase();
+  var weekday=DAYS_SHORT[d.getDay()];
+  var cd=countdownText(d);
+  var meta=[show.city,show.venue].filter(Boolean).join(' · ');
+  var delay=(idx*0.07+0.04).toFixed(2);
+  var countdownBadge=cd.text?('<span class="show-countdown '+cd.cls+'">'+esc(cd.text)+'</span>'):'';
+  var meetingBadge=(!past && show.departureTimeMeetingShow)?('<span class="meeting-time"><span class="mt-dot"></span>Ponto de encontro '+esc(show.departureTimeMeetingShow)+'</span>'):'';
+  var hasLogistics=!!(show.hasHotel||show.hasAirplane||show.hasVan);
+  var verifiedBadge=(hasLogistics && show.logisticsFinalized)?('<span class="vb-core" title="Logística finalizada"><span class="vb-sq r0"></span><span class="vb-sq r22"></span><span class="vb-sq r45"></span><span class="vb-sq r67"></span><svg class="vb-ck" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'):'';
+  return [
+    '<a class="show-card'+(past?' past':'')+'" href="equipe.html?id='+encodeURIComponent(show.id)+'&from=list" style="animation-delay:'+delay+'s">',
+    '  <div class="show-card-inner">',
+    '    <div class="show-date-col">',
+    '      <div class="show-day-num">'+dayNum+'</div>',
+    '      <div class="show-month">'+month+'</div>',
+    '      <div class="show-weekday">'+weekday+'</div>',
+    '    </div>',
+    '    <div class="show-body">',
+    '      <div class="show-name">'+esc(show.name)+'</div>',
+    meta?'      <div class="show-meta">'+esc(meta)+'</div>':'',
+    '      <div class="show-footer">',
+    show.time?'        <span class="show-time">'+esc(show.time)+'</span>':'',
+    '        '+countdownBadge,
+    meetingBadge?'        '+meetingBadge:'',
+    verifiedBadge?'        '+verifiedBadge:'',
+    '      </div>',
+    '    </div>',
+    '    <div class="show-arrow">›</div>',
+    '  </div>',
+    '</a>'
+  ].join('\n');
+}
+
+async function load(){
+  var today=new Date();
+  var todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+
+  var url=SUPABASE_URL+'/rest/v1/shows?select=id,data';
+  var res=await fetch(url,{headers:{apikey:SUPABASE_ANON,Authorization:'Bearer '+SUPABASE_ANON}});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  var rows=await res.json();
+  // Flatten: merge top-level id with the JSONB data blob
+  var shows=rows.map(function(r){return Object.assign({},r.data,{id:r.id})}).filter(function(s){return s.date});
+  shows.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0});
+
+  // 30-day window for "Recentes"
+  var pastCutoff=new Date(today);pastCutoff.setDate(pastCutoff.getDate()-30);
+  var pastStr=pastCutoff.getFullYear()+'-'+String(pastCutoff.getMonth()+1).padStart(2,'0')+'-'+String(pastCutoff.getDate()).padStart(2,'0');
+
+  var upcoming=shows.filter(function(s){return s.date>=todayStr&&!s.completedAt});
+  var past=shows.filter(function(s){return(s.date<todayStr||s.completedAt)&&s.date>=pastStr}).reverse().slice(0,5);
+
+  var html='';
+
+  if(upcoming.length===0&&past.length===0){
+    html='<div class="empty"><div class="empty-svg" style="margin-bottom:14px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="21" x2="15" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><div>Nenhum show encontrado</div></div>';
+  } else {
+    if(upcoming.length>0){
+      // Group by month
+      var currentMonth=null;
+      upcoming.forEach(function(s,i){
+        var d=parseLocalDate(s.date);
+        if(!d)return;
+        var mKey=d.getFullYear()+'-'+d.getMonth();
+        if(mKey!==currentMonth){
+          currentMonth=mKey;
+          html+='<div class="section-hdr">'+MONTHS_FULL[d.getMonth()]+' '+d.getFullYear()+'</div>';
+        }
+        html+=buildCard(s,i,false);
+      });
+    } else {
+      html='<div class="empty"><div class="empty-icon">✅</div><div>Nenhum show agendado</div></div>';
+    }
+    if(past.length>0){
+      html+='<div class="past-divider"><div class="past-line"></div><div class="past-label">Recentes</div><div class="past-line"></div></div>';
+      past.forEach(function(s,i){
+        html+=buildCard(s,upcoming.length+i,true);
+      });
+    }
+  }
+
+  document.getElementById('loading').style.display='none';
+  var root=document.getElementById('root');
+  if(_pinUnlocked){
+    root.innerHTML=html;
+    root.style.display='block';
+  } else {
+    _pendingHtml=html;
+  }
+}
+
+load().catch(function(e){
+  var msg='<div id="error-box">❌ Erro ao carregar shows.<br><small>'+esc(e.message)+'</small></div>';
+  var root=document.getElementById('root');
+  if(_pinUnlocked){
+    document.getElementById('loading').style.display='none';
+    root.innerHTML=msg;
+    root.style.display='block';
+  } else {
+    _pendingHtml=msg;
+  }
+});
+
+var _baseVid=null;
+function doUpdate(){
+  var p=Promise.resolve();
+  if('caches' in window)p=caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));});
+  p.then(function(){if('serviceWorker' in navigator)return navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister();}));});}).then(function(){location.reload();}).catch(function(){location.reload();});
+}
+function checkVersion(){
+  fetch('/version.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    var bid=d&&typeof d.buildId==='string'?d.buildId:null;
+    if(!bid||bid==='__BUILD_ID__')return;
+    if(_baseVid===null){_baseVid=bid;return;}
+    if(bid!==_baseVid)document.getElementById('update-banner').style.display='flex';
+  }).catch(function(){});
+}
+checkVersion();
+setInterval(checkVersion,60*1000);
+window.addEventListener('focus',checkVersion);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')checkVersion();});
+
+if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='RELOAD')location.reload();});}
+</script>
+
+<div id="update-banner">
+  <div class="ub-left">
+    <div class="ub-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="#0A84FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" stroke="#0A84FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div><div class="ub-text">Versão atualizada</div><div class="ub-sub">Recarregue para aplicar</div></div>
+  </div>
+  <button class="ub-btn" onclick="doUpdate()">Recarregar</button>
+</div>
+</body>
+</html>

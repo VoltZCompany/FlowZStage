@@ -1,14 +1,11 @@
-// Tesla — design tokens aligned with Tesla App.html prototype.
-
 const BRAND = '#FF453A';
 const BRAND_2 = '#FF6961';
 const BRAND_DEEP = '#D93025';
 
-// Branco gelo — ice-white + blue glow light theme
 export const LightColors = {
   // legacy aliases ----------------------------------------------------------
   primary: BRAND,
-  primaryLight: '#D9E8FF',     // richer blue tint for chips & selections
+  primaryLight: 'rgba(255,69,58,.12)',
   primaryDark: BRAND_DEEP,
   danger: '#FF3B30',
   dangerLight: '#FFECE8',
@@ -18,12 +15,12 @@ export const LightColors = {
   successLight: '#E5F9ED',
   info: '#339AF0',
   infoLight: '#DFF0FF',
-  background: '#EEF3FF',       // branco gelo — icy cool white
-  surface: '#FFFFFF',          // cards pop crisp on ice bg
-  border: 'rgba(0,80,210,.10)',
+  background: '#FFFAFA',
+  surface: '#FFFFFF',
+  border: 'rgba(150,0,0,.10)',
   text: '#000000',
-  textSecondary: 'rgba(30,50,90,.58)',
-  textMuted: 'rgba(30,50,90,.32)',
+  textSecondary: 'rgba(50,20,20,.55)',
+  textMuted: 'rgba(50,20,20,.30)',
   urgent: '#FF3B30',
   high: '#FF9500',
   medium: BRAND,
@@ -33,21 +30,21 @@ export const LightColors = {
   brand: BRAND,
   brand2: BRAND_2,
   brandDeep: BRAND_DEEP,
-  brandGlow: 'rgba(255,69,58,.42)',  // stronger glow vs old .35
-  bg: '#EEF3FF',
-  groupedBg: '#EEF3FF',
-  surface2: '#F3F7FF',         // second-level surface (slight blue)
-  surface3: '#E4EEFF',         // third-level (chips, selected rows)
-  separator: 'rgba(0,80,210,.13)',
-  separatorOp: 'rgba(0,80,210,.07)',
+  brandGlow: 'rgba(255,69,58,.42)',
+  bg: '#FFFAFA',
+  groupedBg: '#FFFAFA',
+  surface2: '#FFF5F5',
+  surface3: 'rgba(255,69,58,.10)',
+  separator: 'rgba(150,0,0,.12)',
+  separatorOp: 'rgba(150,0,0,.06)',
   label: '#000000',
-  label2: 'rgba(30,50,90,.58)',
-  label3: 'rgba(30,50,90,.32)',
-  fill: 'rgba(255,69,58,.11)',  // blue-tinted fill
+  label2: 'rgba(50,20,20,.55)',
+  label3: 'rgba(50,20,20,.30)',
+  fill: 'rgba(255,69,58,.11)',
   fill2: 'rgba(255,69,58,.06)',
-  tabbar: 'rgba(230,240,255,.94)',  // icy frosted-glass tabbar
-  nav: 'rgba(230,240,255,.94)',
-  sheetHandle: 'rgba(0,80,210,.22)',
+  tabbar: 'rgba(255,255,255,.94)',
+  nav: 'rgba(255,255,255,.94)',
+  sheetHandle: 'rgba(150,0,0,.18)',
 };
 
 export const DarkColors = {

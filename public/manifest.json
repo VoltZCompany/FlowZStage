@@ -1,11 +1,11 @@
 {
-  "name": "FlowZ",
+  "name": "FlowZ - Produtor",
   "short_name": "FlowZ",
   "description": "Gestão de shows para produtores musicais",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0A1628",
-  "theme_color": "#0A84FF",
+  "background_color": "#FF453A",
+  "theme_color": "#FF453A",
   "orientation": "portrait",
   "icons": [
     {

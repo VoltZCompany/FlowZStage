@@ -65,6 +65,7 @@ export default function LoginScreen({ navigation }: { navigation: Nav }) {
         <View style={s.logoWrap}>
           <Image source={require('../../assets/icon.png')} style={s.logo} resizeMode="cover" />
           <Text style={s.appName}>FlowZ</Text>
+          <Text style={s.subtitle}>Produtor</Text>
           <Text style={s.tagline}>Gestão de shows profissional</Text>
         </View>
 
@@ -143,11 +144,18 @@ function styles(colors: any, isDark: boolean) {
       marginBottom: 16,
     },
     appName: {
-      fontSize: 32,
+      fontSize: 36,
       fontWeight: '800',
       letterSpacing: -1,
       color: colors.text,
-      marginBottom: 4,
+      marginBottom: 0,
+    },
+    subtitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      letterSpacing: -0.3,
+      color: colors.primary,
+      marginBottom: 8,
     },
     tagline: {
       fontSize: 14,

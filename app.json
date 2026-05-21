@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "FlowZ Produtor",
+    "name": "FlowZ - Produtor",
     "slug": "flowz-produtor",
     "scheme": "flowzprodutor",
     "version": "1.0.0",
@@ -41,8 +41,8 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "name": "FlowZ Produtor — Gestão de Shows",
-      "shortName": "FlowZ Produtor",
+      "name": "FlowZ - Produtor — Gestão de Shows",
+      "shortName": "FlowZ - Produtor",
       "backgroundColor": "#FF453A",
       "themeColor": "#FF453A",
       "description": "Gestão de shows e turnês para produtores musicais"

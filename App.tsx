@@ -105,33 +105,14 @@ function AppInner() {
     }
 
     // Body background (avoid white flash behind status bar)
-    document.documentElement.style.backgroundColor = '#0F0F1A';
-    document.body.style.backgroundColor = '#0F0F1A';
+    document.documentElement.style.backgroundColor = '#1C1C1E';
+    document.body.style.backgroundColor = '#1C1C1E';
 
-    // Poppins (Google Fonts) como tipografia global do painel PWA.
-    // Preconnect acelera o handshake TLS antes do stylesheet carregar.
-    const pre1 = document.createElement('link');
-    pre1.rel = 'preconnect';
-    pre1.href = 'https://fonts.googleapis.com';
-    document.head.appendChild(pre1);
-
-    const pre2 = document.createElement('link');
-    pre2.rel = 'preconnect';
-    pre2.href = 'https://fonts.gstatic.com';
-    pre2.crossOrigin = 'anonymous';
-    document.head.appendChild(pre2);
-
-    const fontCss = document.createElement('link');
-    fontCss.rel = 'stylesheet';
-    fontCss.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap';
-    document.head.appendChild(fontCss);
-
-    // React-native-web renderiza Text com fontFamily: 'System' em estilo
-    // inline, que vence o body { font-family }. Força com !important.
+    // Sistema de fontes iOS — SF Pro no Safari/iOS, Helvetica Neue como fallback.
     const fontStyle = document.createElement('style');
-    fontStyle.id = 'poppins-override';
+    fontStyle.id = 'system-font-override';
     fontStyle.textContent = `
-      :root { --app-font: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      :root { --app-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; }
       html, body, #root, #root * , input, textarea, select, button {
         font-family: var(--app-font) !important;
       }
